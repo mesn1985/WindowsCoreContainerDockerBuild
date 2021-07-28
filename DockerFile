@@ -1,0 +1,30 @@
+#Base image. Beaware it have to fit the hosting windows build version. 1809 in this case
+FROM mcr.microsoft.com/windows/servercore:ltsc2019
+#Copy JDK from build host to container
+COPY <Path + filename to jdk .exe file> C:/
+# /s parameter provides silent install that require no human interaction
+RUN powershell Start-Process -wait C:\<JDK filename> -ArgumentList '/s'
+RUN powershell Remove-Item C:\<JDK filename>
+# Sets enviroment variable for java applications
+# <change the path to the correct JDK root folder and bin paths>
+RUN setx path "%path%C:/Program Files/java/jdk-11.0.12/bin"
+RUN setx JAVA_HOME "c:/Program Files/java/jdk-11.0.12/"
+RUN setx JRE_HOME "c:/Program Files/java/jdk-11.0.12/"
+# Install Chocolatey
+RUN powershell Set-ExecutionPolicy Bypass -Scope Process -Force
+RUN powershell [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+RUN powershell iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+# Install git
+RUN powershell choco install git.install -y
+# Install ECP endpoint
+
+
+#Follow this tutorial to setup docker on windows server:
+# https://docs.microsoft.com/en-us/virtualization/windowscontainers/quick-start/set-up-environment?tabs=Windows-Server
+
+#Use these command from shell to build and deploy, context must be the directory that contain this dockerfile.
+# docker build --tag windowswithjdk:winjdk .
+# docker run -it windowswithjdk:winjdk powershell.exe
+
+#Licensen of containers, follows the license of the windows host, so only 1 license is needed, meaning no extra costs!
+#https://docs.microsoft.com/en-us/virtualization/windowscontainers/images-eula
